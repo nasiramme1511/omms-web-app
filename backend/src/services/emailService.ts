@@ -1,25 +1,21 @@
 import nodemailer from 'nodemailer';
 
 const createTransporter = () => {
-  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-    const isGmail = process.env.SMTP_HOST?.includes('gmail');
-    return nodemailer.createTransport({
-      ...(isGmail ? { service: 'gmail' } : {
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_PORT === '465',
-      }),
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      tls: { rejectUnauthorized: false },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
-    });
-  }
-  return null;
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return null;
+
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_PORT === '465',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  });
 };
 
 const fromAddress = () => process.env.SMTP_USER || 'noreply@orgmanagement.com';
