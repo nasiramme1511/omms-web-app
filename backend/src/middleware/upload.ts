@@ -1,10 +1,15 @@
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
+
+const ensureDir = (dir: string) => {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+};
 
 // Set up storage logic
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        // Ensure this directory exists in your backend root
+        ensureDir('uploads/receipts/');
         cb(null, 'uploads/receipts/');
     },
     filename: (req, file, cb) => {
@@ -27,6 +32,7 @@ export const uploadReceipt = multer({
 
 const generalStorage = multer.diskStorage({
     destination: (req, file, cb) => {
+        ensureDir('uploads/images/');
         cb(null, 'uploads/images/');
     },
     filename: (req, file, cb) => {
