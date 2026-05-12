@@ -89,15 +89,9 @@ export const register = async (req: Request, res: Response) => {
     // Send OTP via Email
     try {
       await sendOtpEmail(email, otpCode, name);
+      console.log(`OTP email sent to ${email}`);
     } catch (emailError: any) {
       console.error('Email Sending Failed during registration:', emailError);
-      // In this flow, we still have the pending user saved, so they can try to resend or log in to verify
-      return res.status(500).json({ 
-        message: 'Registration data saved, but failed to send verification email. Please try to resend the code.', 
-        error: emailError.message,
-        email,
-        requiresOtp: true 
-      });
     }
 
     res.status(201).json({
@@ -233,7 +227,12 @@ export const resendOtp = async (req: Request, res: Response) => {
       }
     });
 
-    await sendOtpEmail(pendingUser.email, otpCode, pendingUser.name);
+    try {
+      await sendOtpEmail(pendingUser.email, otpCode, pendingUser.name);
+      console.log(`OTP resent to ${pendingUser.email}`);
+    } catch (emailError: any) {
+      console.error('Failed to resend OTP email:', emailError);
+    }
 
     res.status(200).json({ message: 'A new OTP has been sent to your email.' });
   } catch (error: any) {
