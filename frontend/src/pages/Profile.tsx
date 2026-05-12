@@ -70,9 +70,7 @@ const Profile: React.FC = () => {
         data.append('remove_photo', 'true');
       }
 
-      const response = await api.put('/auth/profile', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await api.put('/auth/profile', data);
       
       updateUser(response.data);
       setMessage({ type: 'success', content: 'Profile updated successfully!' });

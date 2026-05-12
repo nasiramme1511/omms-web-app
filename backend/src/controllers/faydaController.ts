@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
+import { JWT_SECRET } from '../config/jwtConfig';
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 
 /**
  * Mock Verification: In a real scenario, this would call the Fayda National ID API.
