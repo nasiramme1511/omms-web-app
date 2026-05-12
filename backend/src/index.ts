@@ -27,6 +27,10 @@ import path from 'path';
 // Serve uploaded receipts statically
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Serve built frontend
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendDist));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/fayda', faydaRoutes);
@@ -44,7 +48,14 @@ app.use('/api/custom-attributes', customAttributeRoutes);
 app.use('/api/chapa', chapaRoutes);
 
 app.get('/', (req, res) => {
-  res.send('Organization Membership Management API');
+  res.sendFile(path.join(frontendDist, 'index.html'));
+});
+
+// Catch-all for client-side routing (SPA)
+app.get('*', (req, res) => {
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  }
 });
 
 app.listen(PORT, () => {
