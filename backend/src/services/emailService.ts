@@ -105,7 +105,8 @@ export const sendResetPasswordEmail = async (to: string, token: string, name: st
       });
     }
 
-    const resetLink = `http://localhost:5174/reset-password?token=${token}&email=${encodeURIComponent(to)}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5174';
+    const resetLink = `${frontendUrl}/reset-password?token=${token}&email=${encodeURIComponent(to)}`;
 
     const mailOptions = {
       from: `"Organization Management" <${process.env.SMTP_USER || 'noreply@orgmanagement.com'}>`,
