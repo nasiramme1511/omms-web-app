@@ -90,7 +90,7 @@ const MemberLayout: React.FC = () => {
             <div className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-sky-800 font-bold text-xs border border-sky-200 overflow-hidden">
               {user?.profile_photo_path ? (
                 <img 
-                  src={`http://localhost:5000/${user.profile_photo_path.replace(/\\/g, '/')}`} 
+                  src={`/uploads/${user.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`} 
                   alt="" 
                   className="w-full h-full object-cover" 
                 />

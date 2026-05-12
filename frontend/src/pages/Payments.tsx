@@ -622,7 +622,7 @@ const Payments: React.FC = () => {
                               <div className="flex gap-2 mt-2 flex-wrap">
                                 {payment.receipt_url && (
                                   <a
-                                    href={`http://localhost:5000/${payment.receipt_url.replace(/\\/g, '/')}`}
+                                    href={`/uploads/${payment.receipt_url.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-1 rounded hover:bg-blue-100"

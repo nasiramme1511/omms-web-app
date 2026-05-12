@@ -320,7 +320,7 @@ const SuperAdminLayout: React.FC = () => {
                     <img
                       src={
                         user?.profile_photo_path 
-                          ? `http://localhost:5000/${user.profile_photo_path.replace(/\\/g, '/')}`
+                          ? `/uploads/${user.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`
                           : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=e0e7ff&color=3730a3`
                       }
                       alt=""
@@ -348,7 +348,7 @@ const SuperAdminLayout: React.FC = () => {
                     <img
                       src={
                         user?.profile_photo_path 
-                          ? `http://localhost:5000/${user.profile_photo_path.replace(/\\/g, '/')}`
+                          ? `/uploads/${user.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`
                           : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || '')}&background=e0e7ff&color=3730a3`
                       }
                       alt=""

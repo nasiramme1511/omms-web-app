@@ -371,7 +371,7 @@ const SuperAdminPayments: React.FC = () => {
                 <div className="pt-4 mt-4 border-t border-slate-100 flex flex-col gap-3">
                   {selected.receipt_url && (
                     <a
-                      href={`http://localhost:5000/${selected.receipt_url.replace(/\\/g, '/')}`}
+                      href={`/uploads/${selected.receipt_url.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`}
                       target="_blank"
                       rel="noreferrer"
                       className="w-full text-center py-2 bg-blue-50 text-blue-700 font-bold rounded hover:bg-blue-100"

@@ -94,7 +94,7 @@ const Layout: React.FC = () => {
              </div>
              <div className="relative group cursor-pointer">
                 <img
-                   src={user?.profile_photo_path || `https://ui-avatars.com/api/?name=${user?.name}&background=ecf39e&color=132a13`}
+                   src={user?.profile_photo_path ? `/uploads/${user.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}` : `https://ui-avatars.com/api/?name=${user?.name}&background=ecf39e&color=132a13`}
                    alt="Profile"
                    className="w-11 h-11 rounded-2xl border-2 border-white shadow-md ring-1 ring-gray-100 group-hover:ring-brand-medium transition-all"
                 />

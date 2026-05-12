@@ -89,7 +89,7 @@ const Profile: React.FC = () => {
     if (photoPreview) return photoPreview;
     if (removePhoto) return `https://ui-avatars.com/api/?name=${user?.name}&background=ecf39e&color=132a13`;
     if (user?.profile_photo_path) {
-      return `http://localhost:5000/${user.profile_photo_path.replace(/\\/g, '/')}`;
+      return `/uploads/${user.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`;
     }
     return `https://ui-avatars.com/api/?name=${user?.name}&background=ecf39e&color=132a13`;
   };

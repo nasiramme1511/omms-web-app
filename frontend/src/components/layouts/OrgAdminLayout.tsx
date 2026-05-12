@@ -108,7 +108,7 @@ const OrgAdminLayout: React.FC = () => {
             <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm overflow-hidden border border-indigo-200/50">
               {user?.profile_photo_path ? (
                 <img 
-                  src={`http://localhost:5000/${user.profile_photo_path.replace(/\\/g, '/')}`} 
+                  src={`/uploads/${user.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`} 
                   alt="" 
                   className="w-full h-full object-cover" 
                 />
