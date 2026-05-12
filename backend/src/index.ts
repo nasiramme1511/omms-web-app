@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import authRoutes from './routes/authRoutes';
 import memberRoutes from './routes/memberRoutes';
 import planRoutes from './routes/planRoutes';
@@ -15,6 +17,37 @@ import helpRoutes from './routes/helpRoutes';
 import faydaRoutes from './routes/faydaRoutes';
 import customAttributeRoutes from './routes/customAttributeRoutes';
 import chapaRoutes from './routes/chapaRoutes';
+
+const prisma = new PrismaClient();
+
+async function ensureSeedUsers() {
+  try {
+    const superEmail = process.env.SEED_SUPERADMIN_EMAIL?.trim();
+    const superPassword = process.env.SEED_SUPERADMIN_PASSWORD?.trim();
+    if (superEmail && superPassword) {
+      const hash = await bcrypt.hash(superPassword, 10);
+      const existing = await prisma.user.findUnique({ where: { email: superEmail } });
+      if (existing) {
+        await prisma.user.update({ where: { email: superEmail }, data: { password: hash, role: 'SuperAdmin', is_verified: true } });
+      } else {
+        await prisma.user.create({ data: { name: 'Platform Owner', email: superEmail, password: hash, role: 'SuperAdmin', is_verified: true } });
+      }
+      console.log('SuperAdmin ready:', superEmail);
+    }
+
+    const demoEmail = process.env.SEED_DEMO_ORG_ADMIN_EMAIL?.trim();
+    const demoPassword = process.env.SEED_DEMO_ORG_ADMIN_PASSWORD?.trim();
+    if (demoEmail && demoPassword) {
+      const hash = await bcrypt.hash(demoPassword, 10);
+      const existing = await prisma.user.findUnique({ where: { email: demoEmail } });
+      if (!existing) {
+        await prisma.user.create({ data: { name: 'Demo Admin', email: demoEmail, password: hash, role: 'orgAdmin', is_verified: true } });
+      }
+    }
+  } catch (err) {
+    console.error('Seed error (non-fatal):', err);
+  }
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -58,6 +91,8 @@ app.get('*', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+ensureSeedUsers().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
 });
