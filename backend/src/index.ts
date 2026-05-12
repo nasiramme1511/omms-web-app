@@ -25,10 +25,10 @@ app.use(express.json({ limit: '10mb' }));
 import path from 'path';
 
 // Serve uploaded receipts statically
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../../../backend/uploads')));
 
 // Serve built frontend
-const frontendDist = path.join(__dirname, '../../frontend/dist');
+const frontendDist = path.join(__dirname, '../../../frontend/dist');
 app.use(express.static(frontendDist));
 
 // Routes
