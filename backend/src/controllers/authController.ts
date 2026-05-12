@@ -429,6 +429,7 @@ export const resetPassword = async (req: Request, res: Response) => {
 export const googleLogin = async (req: Request, res: Response) => {
   try {
     const { token } = req.body;
+    console.log('Google Login: clientId present:', !!process.env.GOOGLE_CLIENT_ID);
     const ticket = await googleClient.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -444,7 +445,7 @@ export const googleLogin = async (req: Request, res: Response) => {
     const jwtToken = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
     res.status(200).json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (error: any) {
-    console.error('Google Login Error:', error);
+    console.error('Google Login Error:', error.message);
     res.status(500).json({ message: 'Error verifying Google authentication', error: error.message });
   }
 };
