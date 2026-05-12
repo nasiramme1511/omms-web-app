@@ -28,9 +28,18 @@ export const getMembers = async (req: any, res: Response) => {
   }
 };
 
+const generateTempPassword = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let password = '';
+  for (let i = 0; i < 10; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+};
+
 export const createMember = async (req: any, res: Response) => {
   try {
-    const { name, email, password, phone, address, sex, join_date } = req.body;
+    const { name, email, phone, address, sex, join_date } = req.body;
     const admin = await prisma.user.findUnique({ 
       where: { id: req.user.userId },
       include: { plan: true }
@@ -47,7 +56,8 @@ export const createMember = async (req: any, res: Response) => {
       return res.status(400).json({ message: 'Member limit reached for your plan' });
     }
 
-    const hashedPassword = await bcrypt.hash(password || 'password123', 10);
+    const tempPassword = generateTempPassword();
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     const member = await prisma.user.create({
       data: {
@@ -65,7 +75,12 @@ export const createMember = async (req: any, res: Response) => {
         is_verified: true,
       },
     });
-    res.status(201).json(member);
+
+    const { password: _, ...memberWithoutPassword } = member;
+    res.status(201).json({
+      ...memberWithoutPassword,
+      tempPassword,
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error creating member', error });
   }

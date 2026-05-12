@@ -35,10 +35,11 @@ const Members: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: '',
+    phone: '',
     role: 'member',
     status: 'active',
   });
+  const [createdTempPassword, setCreatedTempPassword] = useState<string | null>(null);
   const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
   const importInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -63,7 +64,8 @@ const Members: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await api.post('/members', data);
+      const { password, ...payload } = data;
+      const response = await api.post('/members', payload);
       const member = response.data;
       if (Object.keys(customFieldValues || {}).length > 0) {
         await customAttributeService.updateMemberValues(
@@ -76,10 +78,12 @@ const Members: React.FC = () => {
       }
       return member;
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['members'] });
       closeModal();
-      alert('Member added successfully!');
+      if (data.tempPassword) {
+        setCreatedTempPassword(data.tempPassword);
+      }
     },
     onError: (error: any) => {
       console.error('Error creating member:', error);
@@ -194,7 +198,6 @@ const Members: React.FC = () => {
       const header = lines[0].split(',').map((h) => h.trim().toLowerCase());
       const nameIndex = header.indexOf('name');
       const emailIndex = header.indexOf('email');
-      const passwordIndex = header.indexOf('password');
       if (nameIndex === -1 || emailIndex === -1) {
         alert('CSV must include at least "name" and "email" headers.');
         return;
@@ -205,9 +208,8 @@ const Members: React.FC = () => {
         const cols = row.split(',').map((c) => c.trim().replace(/^"|"$/g, ''));
         const name = cols[nameIndex];
         const email = cols[emailIndex];
-        const password = passwordIndex > -1 ? cols[passwordIndex] : 'password123';
         if (!name || !email) continue;
-        await api.post('/members', { name, email, password, role: 'member', status: 'active' });
+        await api.post('/members', { name, email, role: 'member', status: 'active' });
       }
 
       queryClient.invalidateQueries({ queryKey: ['members'] });
@@ -237,7 +239,7 @@ const Members: React.FC = () => {
       setFormData({
         name: member.name,
         email: member.email,
-        password: '',
+        phone: member.phone || '',
         role: member.role || 'member',
         status: 'active',
       });
@@ -257,7 +259,7 @@ const Members: React.FC = () => {
       setFormData({
         name: '',
         email: '',
-        password: '',
+        phone: '',
         role: 'member',
         status: 'active',
       });
@@ -269,7 +271,7 @@ const Members: React.FC = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingMember(null);
-    setFormData({ name: '', email: '', password: '', role: 'member', status: 'active' });
+    setFormData({ name: '', email: '', phone: '', role: 'member', status: 'active' });
     setCustomFieldValues({});
   };
 
@@ -626,6 +628,11 @@ const Members: React.FC = () => {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+              {!editingMember && (
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-4 py-3 text-xs text-indigo-700 font-semibold">
+                  A temporary password will be automatically generated. Share it with the member after creation.
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Full Name</label>
                 <input
@@ -648,19 +655,15 @@ const Members: React.FC = () => {
                 />
                 <p className="mt-1 text-[10px] font-bold text-rose-500 uppercase tracking-widest">Mandatory</p>
               </div>
-              {!editingMember && (
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Password</label>
-                  <input
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none"
-                  />
-                  <p className="mt-1 text-[10px] font-bold text-rose-500 uppercase tracking-widest">Mandatory</p>
-                </div>
-              )}
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Phone</label>
+                <input
+                  type="text"
+                  value={formData.phone || ''}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/30 outline-none"
+                />
+              </div>
               <div>
                 <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Role</label>
                 <input
@@ -728,6 +731,41 @@ const Members: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {createdTempPassword && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 border border-gray-100 text-center">
+            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">🔑</span>
+            </div>
+            <h3 className="text-lg font-black text-gray-900 mb-2">Member Created</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              Share this temporary password with the member. They should change it after logging in.
+            </p>
+            <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 mb-6">
+              <code className="text-2xl font-mono font-bold text-indigo-600 select-all tracking-wider">
+                {createdTempPassword}
+              </code>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(createdTempPassword);
+                setCreatedTempPassword(null);
+              }}
+              className="w-full rounded-xl bg-indigo-600 py-3 font-bold text-white hover:bg-indigo-500 mb-2"
+            >
+              Copy &amp; Close
+            </button>
+            <button
+              type="button"
+              onClick={() => setCreatedTempPassword(null)}
+              className="w-full rounded-xl border border-gray-200 py-3 font-bold text-gray-600"
+            >
+              Close
+            </button>
           </div>
         </div>
       )}
