@@ -15,6 +15,7 @@ import {
   Search,
   LogOut,
   ChevronDown,
+  ChevronRight,
   User as UserIcon,
   Inbox,
   Loader2,
@@ -119,7 +120,7 @@ const SuperAdminLayout: React.FC = () => {
       {/* Sidebar */}
       <aside className={`
         fixed inset-y-0 left-0 z-[50] w-64 bg-slate-900 text-white flex flex-col border-r border-slate-800 transition-transform duration-300 transform
-        lg:translate-x-0 lg:static lg:inset-auto lg:shrink-0
+        lg:translate-x-0 lg:static lg:inset-auto lg:shrink-0 lg:h-screen
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="p-6 border-b border-slate-800 flex items-center justify-between">
@@ -161,14 +162,39 @@ const SuperAdminLayout: React.FC = () => {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+        <div className="p-4 border-t border-slate-800 bg-slate-900/50 shrink-0">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center text-white font-bold text-sm overflow-hidden border border-slate-600">
+              {user?.profile_photo_path ? (
+                <img 
+                  src={`/uploads/${user.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`} 
+                  alt="" 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                user?.name?.charAt(0) ?? '?'
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold text-white truncate">{user?.name}</p>
+              <p className="text-[11px] text-sky-400 font-medium">Super Admin</p>
+            </div>
+          </div>
+          <Link
+            to="/super-admin/profile"
+            onClick={closeSidebar}
+            className="flex items-center justify-between text-xs font-bold text-sky-400 hover:text-sky-300 transition-colors"
+          >
+            Edit Profile
+            <ChevronRight size={14} />
+          </Link>
           <button
             type="button"
             onClick={() => {
               logout();
               navigate('/login');
             }}
-            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white w-full px-2 py-2 transition-colors"
+            className="mt-3 flex items-center gap-2 text-sm text-slate-400 hover:text-white w-full px-2 py-2 transition-colors"
           >
             <LogOut size={18} />
             Sign out
@@ -380,6 +406,15 @@ const SuperAdminLayout: React.FC = () => {
                   </div>
 
                   <div className="py-1" role="none">
+                    <Link
+                      to="/super-admin/profile"
+                      role="menuitem"
+                      onClick={close}
+                      className="flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-gray-50"
+                    >
+                      <UserIcon className="h-4 w-4 shrink-0 text-gray-500" aria-hidden />
+                      Edit Profile
+                    </Link>
                     <Link
                       to="/super-admin/system-config"
                       role="menuitem"

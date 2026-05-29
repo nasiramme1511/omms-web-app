@@ -169,9 +169,15 @@ const AdminOrganizations: React.FC = () => {
                   <tr key={org.id} className="hover:bg-gray-50/50 transition-colors group">
                     <td className="px-8 py-5">
                       <div className="flex items-center space-x-4">
-                        <div className="w-11 h-11 bg-brand-pale/30 rounded-2xl flex items-center justify-center text-brand-medium font-black shadow-sm">
-                           {org.organization_name?.charAt(0) || 'O'}
-                        </div>
+                        <img
+                          src={
+                            org.profile_photo_path
+                              ? `/uploads/${org.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`
+                              : `https://ui-avatars.com/api/?name=${encodeURIComponent(org.organization_name || org.name)}&background=ecf39e&color=132a13`
+                          }
+                          alt=""
+                          className="w-11 h-11 rounded-2xl object-cover ring-1 ring-gray-100 shadow-sm shrink-0"
+                        />
                         <div>
                           <p className="text-sm font-bold text-brand-dark">{org.organization_name}</p>
                           <p className="text-[10px] font-black text-brand-deep/50 uppercase tracking-widest">{org.organization_type}</p>

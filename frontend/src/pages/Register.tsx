@@ -3,8 +3,9 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { defaultPathForRole } from '../lib/roleRoutes';
-import { User, Mail, Lock, Building, Briefcase, UserPlus, Users } from 'lucide-react';
+import { User, Mail, Lock, Building, Briefcase, UserPlus, Users, Fingerprint } from 'lucide-react';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import FaydaModal from '../components/FaydaModal';
 
 type RegisterRole = 'orgAdmin' | 'member';
 
@@ -34,6 +35,8 @@ const Register: React.FC = () => {
   const [otpCode, setOtpCode] = useState('');
   const [otpError, setOtpError] = useState('');
   const [resendLoading, setResendLoading] = useState(false);
+
+  const [isFaydaModalOpen, setIsFaydaModalOpen] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -131,6 +134,12 @@ const Register: React.FC = () => {
     } finally {
       setResendLoading(false);
     }
+  };
+
+  const handleFaydaSuccess = (data: any) => {
+    setIsFaydaModalOpen(false);
+    login(data.token, data.user);
+    navigate(defaultPathForRole(data.user?.role), { replace: true });
   };
 
   const isOrganAdmin = formData.role === 'orgAdmin';
@@ -396,33 +405,57 @@ const Register: React.FC = () => {
               </div>
             </div>
 
-            <div className="w-full flex justify-center">
-              <GoogleLogin
-                onSuccess={async (credentialResponse: CredentialResponse) => {
-                  setLoading(true);
-                  setError('');
-                  try {
-                    const response = await api.post('/auth/google-register', {
-                      token: credentialResponse.credential,
-                      role: formData.role,
-                      organization_name: formData.organization_name,
-                      organization_type: formData.organization_type,
-                      organization_id: formData.organization_id,
-                    });
-                    login(response.data.token, response.data.user);
-                    navigate(defaultPathForRole(response.data.user?.role), { replace: true });
-                  } catch (err: any) {
-                    setError(err.response?.data?.message || 'Google registration failed');
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-                onError={() => setError('Google sign-up failed')}
-              />
+            <div className="flex flex-col gap-4">
+              <div className="w-full flex justify-center">
+                <GoogleLogin
+                  onSuccess={async (credentialResponse: CredentialResponse) => {
+                    setLoading(true);
+                    setError('');
+                    try {
+                      const response = await api.post('/auth/google-register', {
+                        token: credentialResponse.credential,
+                        role: formData.role,
+                        organization_name: formData.organization_name,
+                        organization_type: formData.organization_type,
+                        organization_id: formData.organization_id,
+                      });
+                      login(response.data.token, response.data.user);
+                      navigate(defaultPathForRole(response.data.user?.role), { replace: true });
+                    } catch (err: any) {
+                      setError(err.response?.data?.message || 'Google registration failed');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  onError={() => setError('Google sign-up failed')}
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsFaydaModalOpen(true)}
+                className="group relative w-full h-14 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                  style={{ backgroundImage: 'url("/asset/fayda-btn-bg.png")' }}
+                ></div>
+                <div className="absolute inset-0 bg-brand-dark/60 backdrop-blur-[2px] transition-colors group-hover:bg-brand-dark/40"></div>
+                <div className="relative flex items-center justify-center h-full text-white">
+                  <Fingerprint className="mr-3 h-6 w-6 text-brand-medium brightness-150" />
+                  <span className="font-black text-base tracking-wide uppercase">Register with Fayda ID</span>
+                </div>
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <FaydaModal 
+        isOpen={isFaydaModalOpen} 
+        onClose={() => setIsFaydaModalOpen(false)} 
+        onSuccess={handleFaydaSuccess}
+      />
     </div>
   );
 };

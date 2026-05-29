@@ -10,7 +10,7 @@ const Profile: React.FC = () => {
   const { pathname } = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isOrgProfile =
-    pathname.startsWith('/org-admin/profile') || pathname.startsWith('/org/profile');
+    pathname.startsWith('/org-admin/profile') || pathname.startsWith('/org/profile') || pathname.startsWith('/super-admin/profile');
     
   const [formData, setFormData] = useState({
     name: user?.name || '',

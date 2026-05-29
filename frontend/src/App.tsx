@@ -89,6 +89,7 @@ const App: React.FC = () => {
               <Route path="plans" element={<PlanManagement />} />
               <Route path="payments" element={<SuperAdminPayments />} />
               <Route path="system-config" element={<SystemConfig />} />
+              <Route path="profile" element={<Profile />} />
             </Route>
 
             <Route path="/organadmin/*" element={<OrganAdminLegacyRedirect />} />

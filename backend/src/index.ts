@@ -41,7 +41,21 @@ async function ensureSeedUsers() {
       const hash = await bcrypt.hash(demoPassword, 10);
       const existing = await prisma.user.findUnique({ where: { email: demoEmail } });
       if (!existing) {
-        await prisma.user.create({ data: { name: 'Demo Admin', email: demoEmail, password: hash, role: 'orgAdmin', is_verified: true } });
+        const org = await prisma.organization.create({
+          data: { name: 'Demo Organization', type: 'nonprofit' },
+        });
+        await prisma.user.create({
+          data: {
+            name: 'Demo Admin',
+            email: demoEmail,
+            password: hash,
+            role: 'orgAdmin',
+            is_verified: true,
+            organizationId: org.id,
+            organization_name: org.name,
+            organization_type: org.type,
+          },
+        });
       }
     }
   } catch (err) {
@@ -57,11 +71,15 @@ app.use(express.json({ limit: '10mb' }));
 
 import path from 'path';
 
-// Serve uploaded receipts statically
-app.use('/uploads', express.static(path.join(__dirname, '../../../backend/uploads')));
+// Resolve project root for dev (ts-node) and prod (compiled) modes
+const isDist = __dirname.includes('dist');
+const projectRoot = path.resolve(__dirname, isDist ? '../../..' : '../..');
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(projectRoot, 'backend/uploads')));
 
 // Serve built frontend
-const frontendDist = path.join(__dirname, '../../../frontend/dist');
+const frontendDist = path.join(projectRoot, 'frontend/dist');
 app.use(express.static(frontendDist));
 
 // Routes

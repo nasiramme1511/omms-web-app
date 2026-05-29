@@ -189,10 +189,11 @@ export const verifyOtp = async (req: Request, res: Response) => {
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
 
     console.log('OTP Verification Successful:', email);
+    const { password: _, ...userWithoutPassword } = user;
     res.status(200).json({
       message: 'Email verified and account created successfully',
       token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role }
+      user: userWithoutPassword
     });
 
   } catch (error: any) {
@@ -272,7 +273,8 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
 
-    res.status(200).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    const { password: _, ...userWithoutPassword } = user;
+    res.status(200).json({ token, user: userWithoutPassword });
   } catch (error: any) {
     console.error('Login Error:', error);
     res.status(500).json({ message: 'Error logging in', error: error.message });
@@ -441,8 +443,9 @@ export const googleLogin = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'User not registered. Please sign up first.' });
     }
 
+    const { password: _, ...userWithoutPassword } = user;
     const jwtToken = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
-    res.status(200).json({ token: jwtToken, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.status(200).json({ token: jwtToken, user: userWithoutPassword });
   } catch (error: any) {
     console.error('Google Login Error:', error.message);
     res.status(500).json({ message: 'Error verifying Google authentication', error: error.message });
@@ -529,10 +532,11 @@ export const googleRegister = async (req: Request, res: Response) => {
       });
     }
 
+    const { password: __, ...userWithoutPassword } = user;
     const jwtToken = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
     res.status(201).json({
       token: jwtToken,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: userWithoutPassword,
     });
   } catch (error: any) {
     console.error('Google Registration Error:', error);

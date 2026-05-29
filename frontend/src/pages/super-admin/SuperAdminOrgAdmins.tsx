@@ -10,6 +10,7 @@ type OrgAdmin = {
   email: string;
   role: string;
   organization_name?: string | null;
+  profile_photo_path?: string | null;
 };
 
 const csvEscape = (value: unknown) => {
@@ -155,7 +156,20 @@ const SuperAdminOrgAdmins: React.FC = () => {
             ) : (
               filtered.map((u) => (
                 <tr key={u.id} className="border-t border-slate-100 hover:bg-slate-50/80">
-                  <td className="p-4 font-medium text-slate-900">{u.name}</td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={
+                          u.profile_photo_path
+                            ? `/uploads/${u.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`
+                            : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=e0e7ff&color=3730a3`
+                        }
+                        alt=""
+                        className="w-9 h-9 rounded-full object-cover ring-1 ring-gray-100 shrink-0"
+                      />
+                      <span className="font-medium text-slate-900">{u.name}</span>
+                    </div>
+                  </td>
                   <td className="p-4 text-slate-600">{u.email}</td>
                   <td className="p-4 text-slate-600">{u.organization_name ?? '—'}</td>
                   <td className="p-4">

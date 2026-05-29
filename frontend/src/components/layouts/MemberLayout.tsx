@@ -42,11 +42,11 @@ const MemberLayout: React.FC = () => {
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-[50] w-64 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 transform
-        lg:translate-x-0 lg:static lg:inset-auto lg:shrink-0
+        fixed inset-y-0 left-0 z-[50] w-64 bg-white border-r border-gray-200 flex flex-col overflow-y-auto transition-transform duration-300 transform
+        lg:translate-x-0 lg:static lg:inset-auto lg:shrink-0 lg:h-screen
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-100 flex items-center justify-between shrink-0">
           <div>
             <Link
               to="/"
@@ -85,7 +85,7 @@ const MemberLayout: React.FC = () => {
             );
           })}
         </nav>
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-100 shrink-0">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-9 h-9 rounded-full bg-sky-100 flex items-center justify-center text-sky-800 font-bold text-xs border border-sky-200 overflow-hidden">
               {user?.profile_photo_path ? (
@@ -132,8 +132,16 @@ const MemberLayout: React.FC = () => {
           </button>
           <div className="flex items-center gap-3">
             <span className="hidden sm:inline text-sm font-bold text-gray-800">{user?.name}</span>
-            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-[10px] border border-slate-200">
-              {user?.name?.charAt(0)}
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-[10px] border border-slate-200 overflow-hidden">
+              {user?.profile_photo_path ? (
+                <img 
+                  src={`/uploads/${user.profile_photo_path.replace(/\\/g, '/').replace(/^uploads[\/\\]/, '')}`} 
+                  alt="" 
+                  className="w-full h-full object-cover" 
+                />
+              ) : (
+                user?.name?.charAt(0)
+              )}
             </div>
           </div>
         </header>
