@@ -17,6 +17,7 @@ import helpRoutes from './routes/helpRoutes';
 import faydaRoutes from './routes/faydaRoutes';
 import customAttributeRoutes from './routes/customAttributeRoutes';
 import chapaRoutes from './routes/chapaRoutes';
+import { sendNotificationEmail } from './services/emailService';
 
 const prisma = new PrismaClient();
 
@@ -100,6 +101,21 @@ app.use('/api/chapa', chapaRoutes);
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendDist, 'index.html'));
+});
+
+// Test email endpoint (remove after verifying Resend works)
+app.get('/api/test-email', async (req, res) => {
+  try {
+    await sendNotificationEmail(
+      'nasiramme1511@gmail.com',
+      'Test Email',
+      'Resend is working correctly.',
+      'Nasir'
+    );
+    res.json({ success: true, message: 'Test email sent.' });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // Catch-all for client-side routing (SPA)
