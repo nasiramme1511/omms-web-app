@@ -1,5 +1,3 @@
-// Role values: SuperAdmin | orgAdmin | member
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -31,15 +29,16 @@ model Organization {
   type             String
   createdAt        DateTime                    @default(now())
   updatedAt        DateTime                    @updatedAt
-  blogs            Blog[]
-  events           Event[]
-  users            User[]
-  customAttributes CustomAttributeDefinition[]
   plan_id          String?
   plan_expiry      DateTime?
-  plan             Plan?                       @relation(fields: [plan_id], references: [id])
   payment_phone    String?
+  blogs            Blog[]
+  customAttributes CustomAttributeDefinition[]
+  events           Event[]
+  plan             Plan?                       @relation(fields: [plan_id], references: [id])
+  users            User[]
 
+  @@index([plan_id], map: "organizations_plan_id_fkey")
   @@map("organizations")
 }
 
@@ -66,44 +65,39 @@ model User {
   is_verified           Boolean                @default(false)
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
-  members               Member[]
-  payments              Payment[]
-  notifications         Notification[]
-  otpTokens             OtpToken[]
-  customAttributeValues MemberAttributeValue[]
-  plan                  Plan?                  @relation(fields: [plan_id], references: [id])
-  organization          Organization?          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   blogs                 Blog[]                 @relation("BlogAuthor")
-  
-  attendedEvents        Event[]                @relation("EventAttendees")
+  customAttributeValues MemberAttributeValue[]
+  members               Member[]
+  notifications         Notification[]
+  otpTokens             OtpToken?
+  payments              Payment[]
+  organization          Organization?          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan                  Plan?                  @relation(fields: [plan_id], references: [id])
+  events                Event[]                @relation("eventattendees")
 
+  @@index([organizationId], map: "users_organizationId_fkey")
+  @@index([plan_id], map: "users_plan_id_fkey")
   @@map("users")
 }
 
 model SystemConfig {
-  id               String   @id @default(cuid())
-  platformName     String   @default("OMMS")
-  supportEmail     String   @default("support@omms.com")
-  maintenanceMode  Boolean  @default(false)
-  telebirrPhone    String?
-  cbeBirrPhone     String?
+  id                  String   @id @default(cuid())
+  platformName        String   @default("OMMS")
+  supportEmail        String   @default("support@omms.com")
+  maintenanceMode     Boolean  @default(false)
+  telebirrPhone       String?
+  cbeBirrPhone        String?
   paymentInstructions String?
-  
-  // Contact Info for Home Page
-  contactPhone     String?  @default("+251 911 234 567")
-  contactAddress   String?  @default("Addis Ababa, Ethiopia")
-  contactEmail     String?  @default("info@omms.com")
-  contactHours     String?  @default("Mon - Fri: 8:00 AM - 5:00 PM")
-  
-  // Live Chat Config
-  showLiveChat     Boolean  @default(false)
-  liveChatUrl      String?  @default("")
-  
-  facebookUrl      String?
-  telegramUrl      String?
-  linkedinUrl      String?
-
-  updatedAt        DateTime @updatedAt
+  contactPhone        String?  @default("+251 911 234 567")
+  contactAddress      String?  @default("Addis Ababa, Ethiopia")
+  contactEmail        String?  @default("info@omms.com")
+  contactHours        String?  @default("Mon - Fri: 8:00 AM - 5:00 PM")
+  showLiveChat        Boolean  @default(false)
+  liveChatUrl         String?  @default("")
+  facebookUrl         String?
+  telegramUrl         String?
+  linkedinUrl         String?
+  updatedAt           DateTime @updatedAt
 
   @@map("system_configs")
 }
@@ -111,12 +105,13 @@ model SystemConfig {
 model CustomAttributeDefinition {
   id             String                 @id @default(cuid())
   name           String
-  type           String                 // "text", "number", "date", "boolean"
+  type           String
   required       Boolean                @default(false)
   organizationId String
   organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   values         MemberAttributeValue[]
 
+  @@index([organizationId], map: "custom_attribute_definitions_organizationId_fkey")
   @@map("custom_attribute_definitions")
 }
 
@@ -125,10 +120,11 @@ model MemberAttributeValue {
   memberId    String
   attributeId String
   value       String
-  member      User                      @relation(fields: [memberId], references: [id], onDelete: Cascade)
   attribute   CustomAttributeDefinition @relation(fields: [attributeId], references: [id], onDelete: Cascade)
+  member      User                      @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   @@unique([memberId, attributeId])
+  @@index([attributeId], map: "member_attribute_values_attributeId_fkey")
   @@map("member_attribute_values")
 }
 
@@ -140,6 +136,7 @@ model Notification {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId], map: "notifications_userId_fkey")
   @@map("notifications")
 }
 
@@ -178,22 +175,23 @@ model Member {
   updatedAt   DateTime  @updatedAt
   user        User      @relation(fields: [user_id], references: [id])
 
+  @@index([user_id], map: "members_user_id_fkey")
   @@map("members")
 }
 
 model Plan {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
   price         Float
   billing_cycle String
   type          String
   max_members   Int
   duration_days Int
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  organizations Organization[]
   payments      Payment[]
   users         User[]
-  organizations Organization[]
 
   @@map("plans")
 }
@@ -210,64 +208,65 @@ model Payment {
   rejection_reason String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  plan             Plan?    @relation(fields: [plan_id], references: [id])
-  user             User     @relation(fields: [user_id], references: [id])
-
   payer_type       String?
   payer_id         String?
   payee_type       String?
   payee_id         String?
   reference_type   String?
   reference_id     String?
-
   organization_id  String?
+  plan             Plan?    @relation(fields: [plan_id], references: [id])
+  user             User     @relation(fields: [user_id], references: [id])
 
+  @@index([plan_id], map: "payments_plan_id_fkey")
+  @@index([user_id], map: "payments_user_id_fkey")
   @@map("payments")
 }
 
 model Blog {
-  id             String        @id @default(cuid())
-  title          String
-  content        String
-  image          String?
-  status         String        @default("draft")
-  category       String        @default("general")
-  tags           String?
-  readTime       Int?
-  author_id      String
-  author         User          @relation("BlogAuthor", fields: [author_id], references: [id])
+  id               String        @id @default(cuid())
+  title            String
+  content          String
+  image            String?
+  status           String        @default("draft")
+  category         String        @default("general")
+  tags             String?
+  readTime         Int?
+  author_id        String
+  organizationId   String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  price            Float?
+  payment_required Boolean       @default(false)
+  author           User          @relation("BlogAuthor", fields: [author_id], references: [id])
+  organizations    Organization? @relation(fields: [organizationId], references: [id])
 
-  organizationId String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  organizations  Organization? @relation(fields: [organizationId], references: [id])
-  price          Float?
-  payment_required Boolean    @default(false)
-
+  @@index([author_id], map: "blogs_author_id_fkey")
+  @@index([organizationId], map: "blogs_organizationId_fkey")
   @@map("blogs")
 }
 
 model Event {
-  id             String        @id @default(cuid())
-  title          String
-  description    String
-  date           DateTime
-  end_date       DateTime?
-  location       String?
-  image          String?
-  status         String        @default("draft")
-  category       String        @default("general")
-  capacity       Int?
-  virtualLink    String?
-  contactEmail   String?
-  organizationId String?
-  price          Float?
-  payment_required Boolean    @default(false)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  organizations  Organization? @relation(fields: [organizationId], references: [id])
+  id               String        @id @default(cuid())
+  title            String
+  description      String
+  date             DateTime
+  end_date         DateTime?
+  location         String?
+  image            String?
+  status           String        @default("draft")
+  category         String        @default("general")
+  capacity         Int?
+  virtualLink      String?
+  contactEmail     String?
+  organizationId   String?
+  price            Float?
+  payment_required Boolean       @default(false)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  organizations    Organization? @relation(fields: [organizationId], references: [id])
+  users            User[]        @relation("eventattendees")
 
-  attendees      User[]        @relation("EventAttendees")
-
+  @@index([organizationId], map: "events_organizationId_fkey")
   @@map("events")
 }
